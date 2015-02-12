@@ -1,0 +1,3 @@
+update-from-usb-media@.service /lib/systemd/system/
+update-from-usb-media /usr/lib/
+90-update-from-usb-media.rules /lib/udev/rules.d

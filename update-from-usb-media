@@ -1,0 +1,44 @@
+#!/bin/sh
+set -e -u
+
+disk_mountpoint=$1
+disk=$(basename $disk_mountpoint)
+repo_mountpoint=/tmp/update-from-usb-media-$disk.mount
+list=/tmp/update-from-usb-media-$disk.list
+
+finish () {
+	umount -l $repo_mountpoint 2>&1 >/dev/null || true
+	rm -rf $repo_mountpoint $list
+	trap - EXIT
+}
+
+trap finish INT TERM HUP EXIT
+
+for f in $(find $disk_mountpoint -maxdepth 1 -type f); do
+	if [ "$(blkid -o value -s TYPE $f)" = "iso9660" ]; then
+		isofile=$f
+		break
+	fi
+done
+
+test ${isofile:-} || exit 0
+
+mkdir -p $repo_mountpoint
+mount -t iso9660 -o ro,loop $isofile $repo_mountpoint
+echo "deb [trusted=yes] file:$repo_mountpoint/archive master main" >$list
+list_args="-o dir::etc::sourcelist=$list -o dir::etc::sourceparts=/dev/null"
+
+apt-get -q -y \
+	$list_args \
+	-o acquire::languages=none \
+	update
+apt-cache \
+	$list_args \
+	dumpavail | egrep 'Package|Version' | cut -f2 -d: | paste - - -d' '
+apt-get -q -y \
+	$list_args \
+	dist-upgrade
+apt-get -qq autoremove
+apt-get -qq clean
+
+finish

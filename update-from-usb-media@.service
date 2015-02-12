@@ -1,0 +1,10 @@
+[Unit]
+Description=potential update from usb media at disk %i
+After=mount-usb-media@%i.service
+BindsTo=mount-usb-media@%i.service
+ConditionPathIsDirectory=/run/media/%i
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/update-from-usb-media /run/media/%I

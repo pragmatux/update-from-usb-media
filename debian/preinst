@@ -1,0 +1,24 @@
+#!/bin/sh
+set -e
+
+if [ "$1" != install ]; then
+	exit 0
+fi
+
+# If we're replacing the package 'update-from-added-sources', we need to keep
+# its systemd unit file, otherwise systemd gets confused and seems to kill
+# it off prematurely.
+
+if [ -e /etc/systemd/system/update-from-added-sources.path ]; then
+	cat >/run/systemd/system/update-from-added-sources.service <<-EOF
+	[Unit]
+	Description=OS update triggered by added package sources
+
+	[Service]
+	Type=oneshot
+	ExecStart=/bin/sleep 5
+	ExecStart=/usr/lib/update-from-added-sources/update-from-added-sources
+	EOF
+fi
+
+#DEBHELPER#

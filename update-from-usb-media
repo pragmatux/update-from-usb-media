@@ -36,6 +36,8 @@ apt-cache \
 	$list_args \
 	dumpavail | egrep 'Package|Version' | cut -f2 -d: | paste - - -d' '
 apt-get -q -y \
+	-o dpkg::options::="--force-confask" \
+	-o dpkg::options::="--force-confnew" \
 	$list_args \
 	dist-upgrade
 apt-get -qq autoremove

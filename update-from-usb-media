@@ -33,6 +33,7 @@ cat >$conf <<-EOF
 	acquire::languages "none";
 	dpkg::options {"--force-confask"; "--force-confnew";};
 	apt::get::assume-yes "true";
+	apt::get::purge "true";
 	apt::get::automaticremove "true";
 EOF
 export APT_CONFIG=$conf

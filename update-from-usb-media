@@ -39,7 +39,7 @@ EOF
 export APT_CONFIG=$conf
 
 apt-get -q update
-apt-cache dumpavail | egrep 'Package|Version' | cut -f2 -d: | paste - - -d' '
+grep-aptavail --pattern='*' --show-field=Package,Version --no-field-name | paste - - -
 apt-get -q dist-upgrade
 apt-get -qq autoremove
 install_pkgs="$(grep-aptavail --field=Section --pattern=auto-install --show-field=Package --no-field-names)"

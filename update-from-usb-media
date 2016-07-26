@@ -5,10 +5,11 @@ disk_mountpoint=$1
 disk=$(basename $disk_mountpoint)
 repo_mountpoint=/tmp/update-from-usb-media-$disk.mount
 list=/tmp/update-from-usb-media-$disk.list
+conf=/tmp/update-from-usb-media-$disk.apt.conf
 
 finish () {
 	umount -l $repo_mountpoint 2>&1 >/dev/null || true
-	rm -rf $repo_mountpoint $list
+	rm -rf $repo_mountpoint $list $conf
 	trap - EXIT
 }
 
@@ -26,20 +27,18 @@ test ${isofile:-} || exit 0
 mkdir -p $repo_mountpoint
 mount -t iso9660 -o ro,loop $isofile $repo_mountpoint
 echo "deb [trusted=yes] file:$repo_mountpoint/archive master main" >$list
-list_args="-o dir::etc::sourcelist=$list -o dir::etc::sourceparts=/dev/null"
+cat >$conf <<-EOF
+	dir::etc::sourcelist "$list";
+	dir::etc::sourceparts "/dev/null";
+	acquire::languages "none";
+	dpkg::options {"--force-confask"; "--force-confnew";};
+	apt::get::assume-yes "true";
+EOF
+export APT_CONFIG=$conf
 
-apt-get -q -y \
-	$list_args \
-	-o acquire::languages=none \
-	update
-apt-cache \
-	$list_args \
-	dumpavail | egrep 'Package|Version' | cut -f2 -d: | paste - - -d' '
-apt-get -q -y \
-	-o dpkg::options::="--force-confask" \
-	-o dpkg::options::="--force-confnew" \
-	$list_args \
-	dist-upgrade
+apt-get -q update
+apt-cache dumpavail | egrep 'Package|Version' | cut -f2 -d: | paste - - -d' '
+apt-get -q dist-upgrade
 apt-get -qq autoremove
 apt-get -qq clean
 

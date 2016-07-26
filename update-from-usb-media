@@ -33,6 +33,7 @@ cat >$conf <<-EOF
 	acquire::languages "none";
 	dpkg::options {"--force-confask"; "--force-confnew";};
 	apt::get::assume-yes "true";
+	apt::get::automaticremove "true";
 EOF
 export APT_CONFIG=$conf
 
@@ -40,6 +41,8 @@ apt-get -q update
 apt-cache dumpavail | egrep 'Package|Version' | cut -f2 -d: | paste - - -d' '
 apt-get -q dist-upgrade
 apt-get -qq autoremove
+install_pkgs="$(grep-aptavail --field=Section --pattern=auto-install --show-field=Package --no-field-names)"
+test -n "$install_pkgs" && apt-get -q install $install_pkgs
 apt-get -qq clean
 
 finish

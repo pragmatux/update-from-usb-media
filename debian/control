@@ -9,7 +9,7 @@ Vcs-Browser: https://github.com/pragmatux/update-from-usb-media
 
 Package: update-from-usb-media
 Architecture: all
-Depends: mount-usb-media, ${misc:Depends}
+Depends: mount-usb-media, dctrl-tools, ${misc:Depends}
 Conflicts: update-from-added-sources, add-iso-sources
 Replaces: update-from-added-sources, add-iso-sources
 Description: Potentially update from USB media

@@ -42,7 +42,7 @@ apt-get -q update
 grep-aptavail --pattern='*' --show-field=Package,Version --no-field-name | paste - - -
 apt-get -q dist-upgrade
 apt-get -qq autoremove
-install_pkgs="$(grep-aptavail --field=Section --pattern=auto-install --show-field=Package --no-field-names)"
+install_pkgs="$(grep-aptavail --field=Section --pattern=auto-install --show-field=Package --no-field-names || true)"
 test -n "$install_pkgs" && apt-get -q install $install_pkgs
 apt-get -qq clean
 
